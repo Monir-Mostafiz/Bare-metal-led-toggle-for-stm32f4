@@ -1,0 +1,36 @@
+#include <stdio.h>
+#include "stm32f446xx.h"
+#include <stdint.h>
+#include "uart.h"
+#include "adc.h"
+#include "systick.h"
+#include "timer.h"
+
+
+#define GPIOAENR		(1U<0)
+#define LedPin			(1U<<5)
+
+
+int key;
+int main(void)
+{
+
+	uart2_tx_init();
+	tim2_1hz_init();
+	RCC->AHB1ENR |= GPIOAENR;
+
+	GPIOA->MODER |= (1U<<10);
+	GPIOA->MODER &=~(1U<<11);
+
+	while(1)
+	{
+		//Wait for update interrupt flag
+		while(!(TIM2->SR & SR_UIF)){key=(int)(TIM2->CNT);}
+
+		//clear UIF
+		TIM2->SR &=~ SR_UIF;
+
+		GPIOA->ODR ^=LedPin;
+
+	}
+}
