@@ -1,0 +1,60 @@
+#include <stdio.h>
+#include "stm32f446xx.h"
+#include <stdint.h>
+#include "uart.h"
+#include "adc.h"
+#include "systick.h"
+#include "timer.h"
+#include "exti.h"
+int timestamp = 0;
+
+#define GPIOAENR	(1U<<0)
+#define PIN5		(1u<<5)
+
+void delay_ms(uint32_t ms) {
+    // Assuming a 16MHz system clock
+    uint32_t delay = ms * (1600);
+    while (delay--) {
+        __NOP();
+    }
+}
+
+int main(void)
+{
+
+	pc13_exti_init();
+	uart2_tx_init();
+
+	RCC->AHB1ENR |= GPIOAENR;
+
+	GPIOA->MODER |= (1U<<10);
+	GPIOA->MODER &=~(1U<<11);
+
+	while(1)
+	{
+		delay(500);
+		GPIOA->ODR ^= PIN5;
+
+
+	}
+}
+
+void exti_callback(void)
+{
+	printf("Button Pressed...\n\r");
+	delay(5000);
+	printf("Button Pressed 2...\n\r");
+
+}
+
+void EXTI15_10_IRQHandler(void)
+{
+	if((EXTI->PR & LINE13)!=0)
+	{
+		//CLEAR PR flag
+		EXTI->PR |= LINE13;
+		//do something
+		exti_callback();
+
+	}
+}
