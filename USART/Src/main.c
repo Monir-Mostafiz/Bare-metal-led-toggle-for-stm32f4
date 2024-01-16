@@ -24,10 +24,12 @@ int main(void)
 		if(key == '1')
 		{
 			GPIOA->ODR |= LED_PIN;
+			printf("Led is on");
 		}
 		else
 		{
 			GPIOA->ODR &=~ LED_PIN;
+			printf("Led is off");
 		}
 	}
 }
